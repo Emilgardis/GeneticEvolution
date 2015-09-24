@@ -119,16 +119,44 @@ if __name__ == "__main__":
     import time
     import csv
     from subprocess import call
+    import sys
     filetime = time.strftime("%Y%m%d-%H%M%S")
-    best = dict(grade=[best_["grade"] for best_ in best], bestfit=[best_["bestfit"] for best_ in best], best=[best_["best"] for best_ in best])
+    best = dict(ranged=list(range(len(best))), grade=[best_["grade"] for best_ in best], bestfit=[best_["bestfit"] for best_ in best], best=[best_["best"].decode() for best_ in best])
     with open("evolution-{}.csv".format(filetime), "w") as f:
         writer = csv.writer(f)
-        writer.writerows(zip(list(range(len(best["best"]))), best["grade"], best["bestfit"], best["best"]))
-    try:
+        writer.writerows(zip(list(range(1, len(best["best"]))), best["grade"], best["bestfit"], ))  # best["best"]))
+    if True:
         # TODO implement matplotlib
         import matplotlib.pyplot as plt
-        #plt.plot(
-    except:
+        import numpy as np
+        from scipy import optimize
+        lreg = np.polyfit(best["ranged"], best["grade"], 1)
+        lreg_fn = np.poly1d(lreg)
+        def ereg_func(x, a, c, d):
+            return a*np.exp(-c*x)+d
+        eopt, ecov = optimize.curve_fit(ereg_func, best["ranged"], best["grade"])
+        eopt2, ecov2 = optimize.curve_fit(ereg_func, best["ranged"], best["bestfit"])
+        print("1g: ", lreg)
+        print("exp", eopt)
+        fig = plt.figure()
+        mf, bf = plt.plot(best["ranged"], best["grade"], "-", best["bestfit"], "-")
+        data_legend = plt.legend((mf, bf),("Mean fitness of population", "Best fitness in population"), loc="upper center", bbox_to_anchor=(0.5, 1), frameon=False)
+        lreg_, ereg, ereg2 = plt.plot(best["ranged"], lreg_fn(best["ranged"]), "--", best["ranged"], [ereg_func(x, *eopt) for x in best["ranged"]], "--", best["ranged"], [ereg_func(x, *eopt2) for x in best["ranged"]], "--")
+        reg_legend = plt.legend((lreg_, ereg, ereg2),  ("Linear regression of mean\nY = mx+k\nm = {:.4};k = {:.4}".format(lreg[0], lreg[1]), "Non-linear regression of mean(exp)\nY = a e^(-cX)+d\na={:.4} b={:.4} c={:.4}".format(*eopt), "Non-linear regression of bestfit(exp)\nY = a e^(-cX)+d\na={:.4} b={:.4} c={:.4}".format(*eopt2)), loc=2,  frameon=False)
+        ax = plt.gca()
+        ax.add_artist(data_legend) # Because it was overriden by reg_legend
+        ax.spines["top"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        # ax.set_xticklabels(best["best"], rotation=45, multialignment="right")
+        ax.get_yaxis().tick_left()
+        plt.xlim(1, len(best["best"])-1)
+        plt.ylim(ymin=0)
+        plt.title("Evolution of string '{}'".format(str_.decode()))
+        plt.ylabel("Fitness")
+        plt.xlabel("Generation")
+        plt.show()
+    if False:
         import shutil
         if shutil.which("octave"):
             plotting = """data = dlmread("evolution-{0}.csv", ",");
@@ -140,4 +168,6 @@ if __name__ == "__main__":
             print("evolution-{0}.png")
             """
             call(["octave","-q", "--eval", plotting.format(filetime, str_.decode())])
-    
+        else:
+            print(sys.exc_info())
+            print("Unable to print plot! Please install matplotlib and scipy or octave")
