@@ -1,4 +1,4 @@
-#!usr/bin/env python3.4
+﻿#!usr/bin/env python3.4
 import random as rnd
 import string
 import time
@@ -22,7 +22,7 @@ def random_population(N, ind_len):
 def hamming_distance(s1, s2, bitwise=False):
     """Return hamming distance of 's1' and 's2'.
     Set 'bitwise' to True to do bitwise comparisons.
-
+    
     s1: "Hellk("
     s2: "Hello!"
     distance is 2.
@@ -92,6 +92,8 @@ def evolve(population, length, target, scale=True,
     spawn.extend(parents)
     spawn = [bytearray(ind) for ind in spawn]
     return spawn
+
+
 if __name__ == "__main__":
     pop_size = input("Size of pop (blank=100):")
     pop_size = int(pop_size) if pop_size else 100
@@ -118,17 +120,24 @@ if __name__ == "__main__":
     import csv
     from subprocess import call
     filetime = time.strftime("%Y%m%d-%H%M%S")
+    best = dict(grade=[best_["grade"] for best_ in best], bestfit=[best_["bestfit"] for best_ in best], best=[best_["best"] for best_ in best])
     with open("evolution-{}.csv".format(filetime), "w") as f:
         writer = csv.writer(f)
-        writer.writerows(zip(list(range(len(best))), [best_["grade"] for best_ in best], [best_["bestfit"] for best_ in best]))
-    plotting = """data = dlmread("evolution-{0}.csv", ",");
-    [ax, h1, h2] = plotyy(data(:,1),data(:,2),data(:,1), data(:,3))
-    title("Evolution for string {1}")
-    ylabel(ax(1), "Mean fitness of population")
-    ylabel(ax(2), "Best fitness in population")
-    xlabel("Generation")
-    print("evolution-{0}.png")
-    """
-    import shutil
-    if shutil.which("octave"):
-        call(["octave","-q", "--eval", plotting.format(filetime, str_.decode())])
+        writer.writerows(zip(list(range(len(best["best"]))), best["grade"], best["bestfit"], best["best"]))
+    try:
+        # TODO implement matplotlib
+        import matplotlib.pyplot as plt
+        #plt.plot(
+    except:
+        import shutil
+        if shutil.which("octave"):
+            plotting = """data = dlmread("evolution-{0}.csv", ",");
+            [ax, h1, h2] = plotyy(data(:,1),data(:,2),data(:,1), data(:,3))
+            title("Evolution for string {1}")
+            ylabel(ax(1), "Mean fitness of population")
+            ylabel(ax(2), "Best fitness in population")
+            xlabel("Generation")
+            print("evolution-{0}.png")
+            """
+            call(["octave","-q", "--eval", plotting.format(filetime, str_.decode())])
+    
