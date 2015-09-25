@@ -112,7 +112,7 @@ if __name__ == "__main__":
             break
     timed = time.time()-start
     # print("Generation: {:6}, First best: {}".format(1, best[0]["best"]))
-    print("Generation: {:6}, Result: {}\nTime:{} ms".format(
+    print("Generation: {:6}, Result: {}\nTime:{} s".format(
         len(best)+1, best[-1]["best"], timed))
     #from bashplotlib.scatterplot import plot_scatter
     #plot_scatter(None, list(range(len(best))), [best_["grade"] for best_ in best], 30, "+", None, None)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     with open("evolution-{}.csv".format(filetime), "w") as f:
         writer = csv.writer(f)
         writer.writerows(zip(list(range(1, len(best["best"]))), best["grade"], best["bestfit"], ))  # best["best"]))
-    if True:
+    try:
         # TODO implement matplotlib
         import matplotlib.pyplot as plt
         import numpy as np
@@ -152,11 +152,11 @@ if __name__ == "__main__":
         ax.get_yaxis().tick_left()
         plt.xlim(1, len(best["best"])-1)
         plt.ylim(ymin=0)
-        plt.title("Evolution of string '{}'".format(str_.decode()))
+        plt.title("Evolution of string '{}'\nPopulations: {}, Exc time: {:.5} s".format(str_.decode(), pop_size, timed))
         plt.ylabel("Fitness")
         plt.xlabel("Generation")
         plt.show()
-    if False:
+    except ImportError:
         import shutil
         if shutil.which("octave"):
             plotting = """data = dlmread("evolution-{0}.csv", ",");
