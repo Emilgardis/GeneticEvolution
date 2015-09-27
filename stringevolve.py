@@ -95,6 +95,7 @@ def evolve(population, length, target, scale=True,
 
 
 if __name__ == "__main__":
+    rnd.seed(1234)
     pop_size = input("Size of pop (blank=100):")
     pop_size = int(pop_size) if pop_size else 100
     str_ = bytes(input("Input string:").encode())
@@ -144,9 +145,9 @@ if __name__ == "__main__":
         def ereg_func(x, a, c, d):
             return a*np.exp(-c*x)+d
         eopt, ecov = optimize.curve_fit(
-            ereg_func, best["ranged"], best["grade"])
+            ereg_func, best["ranged"], best["grade"], sigma=0.001)
         eopt2, ecov2 = optimize.curve_fit(
-            ereg_func, best["ranged"], best["bestfit"])
+            ereg_func, best["ranged"], best["bestfit"], sigma=0.001)
         print("1g: ", lreg)
         print("exp", eopt)
         fig = plt.figure()
