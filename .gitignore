@@ -59,3 +59,8 @@ target/
 # Project specific
 .ropeproject
 octave-*
+*.csv
+.vs
+*.pyproj
+*.sln
+*.pyperf
